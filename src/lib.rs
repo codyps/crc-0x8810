@@ -25,6 +25,7 @@
 /// performing an MSB first operation requires reversing the bits of each input byte and revsersing
 /// the final CRC output. It _may_ be possible to determine a direct method to calculate the crc
 /// without needing a reverse bits operation (which can be expensive on some platforms)
+#[inline]
 pub const fn update(crc: u16, data: u8) -> u16 {
     let data = data ^ (crc as u8);
     let data = data ^ (data << 4);
@@ -42,17 +43,20 @@ pub struct Algorithm {
 }
 
 impl Algorithm {
+    #[inline]
     pub const fn checksum(&self, bytes: &[u8]) -> u16 {
         let mut crc = self.init();
         crc = self.update(crc, bytes);
         self.finalize(crc)
     }
 
+    #[inline]
     const fn init(&self) -> u16 {
         // The byte update always uses an LSB-first register, regardless of refin.
         self.init.reverse_bits()
     }
 
+    #[inline]
     const fn update(&self, mut crc: u16, bytes: &[u8]) -> u16 {
         let mut i = 0;
         if self.refin {
@@ -69,6 +73,7 @@ impl Algorithm {
         crc
     }
 
+    #[inline]
     const fn finalize(&self, mut crc: u16) -> u16 {
         if !self.refout {
             crc = crc.reverse_bits();
@@ -76,6 +81,7 @@ impl Algorithm {
         crc ^ self.xorout
     }
 
+    #[inline]
     pub const fn digest(&self) -> Digest {
         Digest::new(self)
     }
@@ -89,15 +95,18 @@ pub struct Digest<'a> {
 }
 
 impl<'a> Digest<'a> {
+    #[inline]
     const fn new(algorithm: &'a Algorithm) -> Self {
         let value = algorithm.init();
         Digest { algorithm, value }
     }
 
+    #[inline]
     pub fn update(&mut self, bytes: &[u8]) {
         self.value = self.algorithm.update(self.value, bytes);
     }
 
+    #[inline]
     pub const fn finalize(self) -> u16 {
         self.algorithm.finalize(self.value)
     }
