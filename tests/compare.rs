@@ -88,3 +88,51 @@ fn asymmetric_seed_reflection_combinations() {
         }
     });
 }
+
+// Independent MSB-first bitwise reference, using the public parameter convention.
+fn bitwise_checksum(algorithm: &crc_0x8810::Algorithm, bytes: &[u8]) -> u16 {
+    let mut crc = algorithm.init;
+    for &byte in bytes {
+        let byte = if algorithm.refin {
+            byte.reverse_bits()
+        } else {
+            byte
+        };
+        crc ^= u16::from(byte) << 8;
+        for _ in 0..8 {
+            crc = (crc << 1) ^ if crc & 0x8000 != 0 { 0x1021 } else { 0 };
+        }
+    }
+    if algorithm.refout {
+        crc = crc.reverse_bits();
+    }
+    crc ^ algorithm.xorout
+}
+
+#[test]
+fn arbitrary_parameters_match_bitwise_reference() {
+    proptest!(|(bytes: Vec<u8>, init in any::<u16>(), xorout in any::<u16>(), split in any::<usize>())| {
+        let split = split % (bytes.len() + 1);
+        for refin in [false, true] {
+            for refout in [false, true] {
+                let algorithm = crc_0x8810::Algorithm {
+                    init,
+                    refin,
+                    refout,
+                    xorout,
+                    ..SPI_FUJITSU
+                };
+                let expected = bitwise_checksum(&algorithm, &bytes);
+                prop_assert_eq!(algorithm.checksum(&bytes), expected);
+                // Check initialization and finalization with no input as well.
+                prop_assert_eq!(algorithm.checksum(b""), bitwise_checksum(&algorithm, b""));
+                let mut digest = algorithm.digest();
+                digest.update(&bytes[..split]);
+                digest.update(b"");
+                digest.update(&bytes[split..]);
+                prop_assert_eq!(digest.finalize(), expected);
+                prop_assert_eq!(algorithm.digest().finalize(), bitwise_checksum(&algorithm, b""));
+            }
+        }
+    });
+}

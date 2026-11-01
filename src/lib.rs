@@ -21,10 +21,9 @@
 /// The lowest level operation, applies a single byte of data to a given crc and returns the new
 /// crc
 ///
-/// NOTE: internally, this is performing a least significant bit (LSB) first crc. This means that
-/// performing an MSB first operation requires reversing the bits of each input byte and revsersing
-/// the final CRC output. It _may_ be possible to determine a direct method to calculate the crc
-/// without needing a reverse bits operation (which can be expensive on some platforms)
+/// This primitive uses a least significant bit (LSB) first register. To use it for an MSB-first
+/// CRC, reverse the initial register, each input byte, and the final register. [`Algorithm`]
+/// instead uses a direct MSB-first update when `refin` is false to avoid these reversals.
 #[inline]
 pub const fn update(crc: u16, data: u8) -> u16 {
     let data = data ^ (crc as u8);
@@ -52,8 +51,12 @@ impl Algorithm {
 
     #[inline]
     const fn init(&self) -> u16 {
-        // The byte update always uses an LSB-first register, regardless of refin.
-        self.init.reverse_bits()
+        // Keep the register in the bit order used by the selected update loop.
+        if self.refin {
+            self.init.reverse_bits()
+        } else {
+            self.init
+        }
     }
 
     #[inline]
@@ -66,7 +69,10 @@ impl Algorithm {
             }
         } else {
             while i < bytes.len() {
-                crc = update(crc, bytes[i].reverse_bits());
+                // Fold the high-byte feedback directly using the 0x1021 polynomial.
+                let data = ((crc >> 8) as u8) ^ bytes[i];
+                let data = data ^ (data >> 4);
+                crc = (crc << 8) ^ ((data as u16) << 12) ^ ((data as u16) << 5) ^ (data as u16);
                 i += 1;
             }
         }
@@ -75,7 +81,7 @@ impl Algorithm {
 
     #[inline]
     const fn finalize(&self, mut crc: u16) -> u16 {
-        if !self.refout {
+        if self.refin ^ self.refout {
             crc = crc.reverse_bits();
         }
         crc ^ self.xorout
