@@ -49,11 +49,8 @@ impl Algorithm {
     }
 
     const fn init(&self) -> u16 {
-        if self.refin {
-            self.init.reverse_bits()
-        } else {
-            self.init
-        }
+        // The byte update always uses an LSB-first register, regardless of refin.
+        self.init.reverse_bits()
     }
 
     const fn update(&self, mut crc: u16, bytes: &[u8]) -> u16 {
