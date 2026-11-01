@@ -136,3 +136,17 @@ fn arbitrary_parameters_match_bitwise_reference() {
         }
     });
 }
+
+#[test]
+fn crc_any_reference_algorithms() {
+    let all_bytes: Vec<u8> = (0..=u8::MAX).collect();
+    for bytes in [b"".as_slice(), b"123456789", &all_bytes] {
+        for (algorithm, mut reference) in [
+            (crc_0x8810::CRC_16_XMODEM, crc_any::CRCu16::crc16xmodem()),
+            (crc_0x8810::CRC_16_KERMIT, crc_any::CRCu16::crc16kermit()),
+        ] {
+            reference.digest(bytes);
+            assert_eq!(algorithm.checksum(bytes), reference.get_crc());
+        }
+    }
+}

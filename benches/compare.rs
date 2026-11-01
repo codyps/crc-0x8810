@@ -1,11 +1,14 @@
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
-use rand::RngCore;
+use criterion::{criterion_group, criterion_main, Criterion};
+use std::hint::black_box;
+
+fn benchmark_input() -> [u8; 4096] {
+    // Cover every byte value reproducibly without an RNG dependency.
+    std::array::from_fn(|i| (i as u8).wrapping_mul(31).wrapping_add(17))
+}
 
 fn crc_xmodem(c: &mut Criterion) {
     let mut group = c.benchmark_group("xmodem");
-    let mut rng = rand::thread_rng();
-    let mut buf = [0u8; 4096];
-    rng.fill_bytes(&mut buf);
+    let buf = benchmark_input();
     group.bench_function("crc-ccitt", |b| {
         b.iter(|| crc_0x8810::CRC_16_XMODEM.checksum(black_box(&buf)))
     });
@@ -30,9 +33,7 @@ fn crc_xmodem(c: &mut Criterion) {
 
 fn crc_kermit(c: &mut Criterion) {
     let mut group = c.benchmark_group("kermit");
-    let mut rng = rand::thread_rng();
-    let mut buf = [0u8; 4096];
-    rng.fill_bytes(&mut buf);
+    let buf = benchmark_input();
     group.bench_function("crc-ccitt", |b| {
         b.iter(|| crc_0x8810::CRC_16_KERMIT.checksum(black_box(&buf)))
     });

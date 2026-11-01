@@ -1,8 +1,12 @@
-use assert_hex::assert_eq_hex as assert_eq;
 use crc_0x8810::*;
 
 fn check(algorithm: &Algorithm) {
-    assert_eq!(algorithm.checksum(b"123456789"), algorithm.check);
+    let actual = algorithm.checksum(b"123456789");
+    assert_eq!(
+        actual, algorithm.check,
+        "checksum {actual:#06x}, expected {:#06x}",
+        algorithm.check
+    );
 }
 
 #[test]
