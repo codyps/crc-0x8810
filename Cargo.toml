@@ -1,6 +1,6 @@
 [package]
 name = "crc-0x8810"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 description = "Very efficient, table-free, byte-by-byte 0x8810/0x1021 crc polynomial application"
 license = "OSL-3.0"
