@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 description = "Very efficient, table-free, byte-by-byte 0x8810/0x1021 crc polynomial application"
 license = "OSL-3.0"
-repository = "https://github.com/jmesmon/crc-0x8810"
+repository = "https://github.com/codyps/crc-0x8810"
 documentation = "https://docs.rs/crc-0x8810"
 
 [dependencies]

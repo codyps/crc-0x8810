@@ -8,14 +8,14 @@
 //! MSB polynomial: 0x8810
 //! MSB polynomial (with explicit 1): 0x1021
 //!
-//! https://users.ece.cmu.edu/~koopman/crc/c16/0x8810.txt
+//! <https://users.ece.cmu.edu/~koopman/crc/c16/0x8810.txt>
 //!
 //! The method used is described in a few places:
 //!
-//!  - [Greg Cook provides some commented 6502 asm](http://6502.org/source/integers/crc-more.html)
-//!  - [Jon Buller describes how to determine it through automated symbolic calculation and provides some 8051 asm](https://groups.google.com/g/comp.arch.embedded/c/fvQ7yM5F6ys/m/3xcgqF3Kqc4J?pli=1)
+//!  - [Greg Cook provides some commented 6502 asm (6502.org source)](https://github.com/6502org/6502.org/blob/main/public/source/integers/crc-more.html)
+//!  - [Jon Buller describes how to determine it through automated symbolic calculation and provides some 8051 asm](https://groups.google.com/g/comp.arch.embedded/c/fvQ7yM5F6ys/m/3xcgqF3Kqc4J)
 //!  - [adapted by others into C](https://www.ccsinfo.com/forum/viewtopic.php?t=24977)
-//!  - the same method is used in [avr-libc](https://www.nongnu.org/avr-libc/user-manual/group__util__crc.html)'s `_crc_ccitt_update` function.
+//!  - the same method is used in [avr-libc](https://avrdudes.github.io/avr-libc/avr-libc-user-manual/group__util__crc.html)'s `_crc_ccitt_update` function.
 //!
 
 /// The lowest level operation, applies a single byte of data to a given crc and returns the new
